@@ -59,32 +59,22 @@ public class Mailer {
 
 		Session session = Session.getInstance(props, auth);
 
-		// Create a default MimeMessage object.
-        Message message = new MimeMessage(session);
-
-        // Set From: header field of the header.
+	    Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
-
-        // Set To: header field of the header.
-        message.setRecipients(Message.RecipientType.TO,
-           InternetAddress.parse(toEmail));
-
-        // Set Subject: header field
+        message.setRecipients(Message.RecipientType.TO,InternetAddress.parse(toEmail));
         message.setSubject("Bildschirmausgabe");
 
-        // Create the message part
+       
         BodyPart messageBodyPart = new MimeBodyPart();
 
-        // Now set the actual message
         messageBodyPart.setText("Guten Tag, " + fromEmail + " teilt dieses Dokument mit Ihnen.");
 
-        // Create a multipar message
         Multipart multipart = new MimeMultipart();
 
-        // Set text message part
+       
         multipart.addBodyPart(messageBodyPart);
 
-        // Part two is attachment
+        
         messageBodyPart = new MimeBodyPart();
         String filename = "H:\\data.png";
         DataSource source = new FileDataSource(filename);
@@ -92,10 +82,10 @@ public class Mailer {
         messageBodyPart.setFileName(filename);
         multipart.addBodyPart(messageBodyPart);
 
-        // Send the complete message parts
+        
         message.setContent(multipart);
 
-        // Send message
+        
         Transport.send(message);
 	}
 }
