@@ -1,6 +1,6 @@
 package application;
 
-import java.util.Date;
+import java.io.FileNotFoundException;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -8,11 +8,13 @@ import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 import javax.mail.Authenticator;
 import javax.mail.BodyPart;
+import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -20,35 +22,40 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 /**
- * Extremely simple helper class to send Emails using BFH's smtp server. 
- * based on Mailer of JavaFX professor Philipp Locher from https://web.ti.bfh.ch/~lhp2/pm/src/Mailer.java
+ * Extremely simple helper class to send Emails using BFH's smtp server. based
+ * on Mailer of JavaFX professor Philipp Locher from
+ * https://web.ti.bfh.ch/~lhp2/pm/src/Mailer.java
  */
 public class Mailer {
 
-	public static final String HOST = "smtp.bfh.ch";
-	public static final String PORT = "587";
-	
-	
+	public static final String HOST = "futura.metanet.ch";
+	public static final String PORT = "465";
+
 	/**
 	 * Sends an email using BFH's smtp server smtp.bfh.ch.
 	 * 
-	 * @param login The login (eg. 'abc2')
-	 * @param password The password
-	 * @param fromEmail The from email must match with the login (eg. 'claus.amsberger@bfh.ch')
-	 * @param toEmail The to email (eg. 'samichlaus@wald.ch')
-	 * @param subject The subject of the message.
-	 * @param message The message
+	 * @param login     The login (eg. 'abc2')
+	 * @param password  The password
+	 * @param fromEmail The from email must match with the login (eg.
+	 *                  'claus.amsberger@bfh.ch')
+	 * @param toEmail   The to email (eg. 'samichlaus@wald.ch')
+	 * @param subject   The subject of the message.
+	 * @param message   The message
 	 * @throws MessagingException
 	 */
-	public static void send(final String login, final String password, final String fromEmail, final String toEmail, final String subject, final String text)
-			throws MessagingException {
+	public static void send(final String login, final String password, final String fromEmail, final String toEmail,
+			final String subject, final String text, final String attachment, final Boolean debug)
+			throws MessagingException, FileNotFoundException {
 
 		Properties props = new Properties();
 		props.put("mail.smtp.host", HOST);
 		props.put("mail.smtp.port", PORT);
 		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.debug", "true");
+		props.put("mail.smtp.ssl.enable", "true");
+
+		if (debug) {
+			props.put("mail.debug", "true");
+		}
 
 		Authenticator auth = new Authenticator() {
 			@Override
@@ -59,33 +66,70 @@ public class Mailer {
 
 		Session session = Session.getInstance(props, auth);
 
-	    Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(fromEmail));
-        message.setRecipients(Message.RecipientType.TO,InternetAddress.parse(toEmail));
-        message.setSubject("Bildschirmausgabe");
+		Message message = new MimeMessage(session);
+		System.out.println("Email:" + fromEmail);
+		InternetAddress efromEmail = new InternetAddress(fromEmail);
 
-       
-        BodyPart messageBodyPart = new MimeBodyPart();
+		message.setFrom(efromEmail);
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+		message.setSubject("Bildschirmausgabe");
 
-        messageBodyPart.setText("Guten Tag, " + fromEmail + " teilt dieses Dokument mit Ihnen.");
+		BodyPart messageBodyPart = new MimeBodyPart();
 
-        Multipart multipart = new MimeMultipart();
+		messageBodyPart.setText("Guten Tag, " + fromEmail + " teilt dieses Dokument mit Ihnen.");
 
-       
-        multipart.addBodyPart(messageBodyPart);
+		Multipart multipart = new MimeMultipart();
 
-        
-        messageBodyPart = new MimeBodyPart();
-        String filename = "H:\\data.png";
-        DataSource source = new FileDataSource(filename);
-        messageBodyPart.setDataHandler(new DataHandler(source));
-        messageBodyPart.setFileName(filename);
-        multipart.addBodyPart(messageBodyPart);
+		multipart.addBodyPart(messageBodyPart);
 
-        
-        message.setContent(multipart);
+		messageBodyPart = new MimeBodyPart();
+		String filename = attachment;
+		DataSource source = new FileDataSource(filename);
+		messageBodyPart.setDataHandler(new DataHandler(source));
+		messageBodyPart.setFileName(filename);
+		multipart.addBodyPart(messageBodyPart);
 
-        
-        Transport.send(message);
+		message.setContent(multipart);
+		if (debug) {
+			System.out.println("debug: ready for sending");
+		}
+		Transport.send(message);
+
+		if (debug) {
+			System.out.println("debug: saving on Sent");
+		}
+		try {
+			copyIntoSent(session, message);
+		} catch (MessagingException e) {
+			System.out.println("Houston: we have a problem!");
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * based on user1260928 of stackoverflow on
+	 * https://stackoverflow.com/questions/29669575/javamail-copy-message-to-sent-folder
+	 * 
+	 * 
+	 * 
+	 * @param session
+	 * @param msg
+	 * @throws MessagingException
+	 */
+	private static void copyIntoSent(Session session, Message msg) throws MessagingException {
+
+		Store store = session.getStore("imap");
+		store.connect(Mailer.HOST, Credentials.username, Credentials.password);
+
+		Folder folder = store.getFolder("Inbox.Gesendet.Screenshots");
+		if (!folder.exists()) {
+			folder.create(Folder.HOLDS_MESSAGES);
+		}
+		folder.open(Folder.READ_WRITE);
+		folder.appendMessages(new Message[] { msg });
+		folder.open(Folder.READ_WRITE);
+		msg.getHeader("Message-ID");
+
+		folder.close(false);
 	}
 }
