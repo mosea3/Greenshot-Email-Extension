@@ -28,6 +28,10 @@ public class ShareView implements View {
 
 	@Override
 	public void show() throws IOException {
+		/**
+		 * todo FXML: Vorlagenauswahl für Betreff und Textvorgaben Auftrag fertig letzte
+		 * Rechnung Rechnungskopie Lieferscheinkopie Prüfprotokollkopie Dokument
+		 */
 
 		Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("screen.fxml"));
 

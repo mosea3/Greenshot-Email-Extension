@@ -5,6 +5,12 @@ import application.view.ShareView;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+/**
+ * Main Application Class
+ * 
+ * @author andy.moser
+ *
+ */
 public class Main extends Application {
 // public class Main {
 	Args param;

@@ -10,6 +10,12 @@ import application.Credentials;
 import application.Mailer;
 import application.View;
 
+/**
+ * implements UI on command line for the fancy ones
+ * 
+ * @author andy.moser
+ *
+ */
 public class ConsoleShareView implements View {
 	Args args;
 

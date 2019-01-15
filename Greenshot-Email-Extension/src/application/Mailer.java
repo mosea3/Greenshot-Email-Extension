@@ -32,16 +32,18 @@ public class Mailer {
 	public static final String PORT = "465";
 
 	/**
-	 * Sends an email using BFH's smtp server smtp.bfh.ch.
+	 * Sends an email with attachment using specified smtp server futura.metanet.ch
 	 * 
-	 * @param login     The login (eg. 'abc2')
-	 * @param password  The password
-	 * @param fromEmail The from email must match with the login (eg.
-	 *                  'claus.amsberger@bfh.ch')
-	 * @param toEmail   The to email (eg. 'samichlaus@wald.ch')
-	 * @param subject   The subject of the message.
-	 * @param message   The message
-	 * @throws MessagingException
+	 * @param login      The login (eg. 'abc2')
+	 * @param password   The password
+	 * @param fromEmail  The from email must match with the login (eg.
+	 *                   'andy.moser@blessing.ch')
+	 * @param toEmail    The to email (eg. 'samichlaus@wald.ch')
+	 * @param subject    The subject of the message.
+	 * @param text       The message
+	 * @param attachment the URI to the Attachment
+	 * @param debug      = false, whether debug output into console activated or not
+	 * @throws MessagingException, FileNotFoundException
 	 */
 	public static void send(final String login, final String password, final String fromEmail, final String toEmail,
 			final String subject, final String text, final String attachment, final Boolean debug)

@@ -6,9 +6,10 @@ package application;
 import java.util.HashMap;
 
 /**
+ * evaluates all given Args of the Applications main method at runtime.
+ * rudimental alternative to JCommander using HashMap
+ * 
  * @author mosea3@bfh.ch
- * @description evaluates all given Args of the Applications main method at
- *              runtime. rudimental alternative to JCommander using HashMap
  * 
  * @usage use "--" as prefix for a key, after a blank space indicate value
  *        escape spaces inside the desired value by enclosing the whole value

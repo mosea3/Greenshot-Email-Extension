@@ -45,6 +45,13 @@ public class Controller {
 	 */
 	public void Controller() {
 
+		/**
+		 * todo: check repeatedly threaded, if theres a new image in the clipboard, if
+		 * yes, add it into attachments
+		 * 
+		 * todo: save images as pdf and send them
+		 */
+
 		String[] param = parameters.trim().split("\\s+");
 
 		System.out.println(param);
@@ -71,6 +78,11 @@ public class Controller {
 				emailInput.requestFocus();
 			}
 		});
+
+		/**
+		 * todo: evaluate if Clipboard on init contains email adress: if yes, paste it
+		 * into email field
+		 */
 	}
 
 	private boolean sendMail() throws FileNotFoundException {
