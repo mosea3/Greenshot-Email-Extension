@@ -100,8 +100,8 @@ public class Mailer {
 		}
 		try {
 			copyIntoSent(session, message);
-		} catch (MessagingException e) {
-			System.out.println("Houston: we have a problem!");
+		} catch (Exception e) {
+			System.out.println("Houston: we have a problem!" + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -127,8 +127,6 @@ public class Mailer {
 		}
 		folder.open(Folder.READ_WRITE);
 		folder.appendMessages(new Message[] { msg });
-		folder.open(Folder.READ_WRITE);
-		msg.getHeader("Message-ID");
 
 		folder.close(false);
 	}
