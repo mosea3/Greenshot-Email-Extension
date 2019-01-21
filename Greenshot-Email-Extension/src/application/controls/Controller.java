@@ -1,6 +1,10 @@
 package application.controls;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 import javax.mail.MessagingException;
 
@@ -14,6 +18,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
@@ -35,6 +40,9 @@ public class Controller {
 
 	@FXML
 	private ListView<String> filesList;
+
+	@FXML
+	private ChoiceBox templateSelector;
 
 	String parameters = System.getProperty("sun.java.command").toString().substring("Application.Main".length());
 
@@ -72,6 +80,21 @@ public class Controller {
 		ObservableList<String> items = FXCollections.observableArrayList(args.get("file"));
 		filesList.setItems(items);
 
+		templateSelector.setValue("Auftrag fertig");
+		templateSelector.getItems().add("Auftrag fertig");
+		templateSelector.getItems().add("letzte Rechnung");
+		templateSelector.getItems().add("Rechnungskopie");
+		templateSelector.getItems().add("Lieferscheinkopie");
+		templateSelector.getItems().add("Prüfprotokollkopie");
+		templateSelector.getItems().add("Dokument");
+
+		try {
+			scanTemplates();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("no Templates found");
+		}
+
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
@@ -79,13 +102,84 @@ public class Controller {
 			}
 		});
 
+		emailInput.requestFocus();
 		/**
 		 * todo: evaluate if Clipboard on init contains email adress: if yes, paste it
 		 * into email field
 		 */
 	}
 
+	private void scanTemplates() throws FileNotFoundException {
+		Collection<File> all = new ArrayList<File>();
+		File file = new File("greenshot-email-templates");
+		File[] children = file.listFiles();
+
+		if (children != null) {
+			for (File child : children) {
+				all.add(child);
+				templateSelector.getItems().add(child.getName().toString());
+				System.out.println(child.getName().toString());
+			}
+		}
+
+	}
+
 	private boolean sendMail() throws FileNotFoundException {
+		String subject;
+		String text;
+		ArrayList<String> headers = new ArrayList<String>();
+
+		switch (templateSelector.getValue().toString()) {
+
+		case "Auftrag fertig":
+			subject = "Ihr Auftrag ist fertig!";
+			text = "Guten Tag," + "Ihr Auftrag wurde fertig gestellt." + "Der dazugehörige Abholschein wurde angehängt"
+					+ "Bei Änderungen der Lieferungsmodalität (Abholzeit/Post/Spedition), bitten wir um kurze Rückmeldung."
+					+ "vielen Dank!" + "ihre Härterei Blessing AG";
+			headers.addAll(Arrays.asList("Accept-Language: de-CH", "Accept-Language: fr-CH", "Accept-Language: es-ES",
+					"Reply-To: info@blessing.ch", "X-Priority: 1 (Highest)", "X-MSMail-Priority: High",
+					"Importance: High"));
+			break;
+
+		case "letzte Rechnung":
+			// todo: add S/MIME Signature option
+			subject = "letzte Rechnung";
+			text = "Guten Tag," + "Bitte beachten Sie Ihre neueste Rechung im Anhang." + "mit freundlichen Grüssen"
+					+ "Härterei Blessing AG";
+			headers.add("Reply-To: info@blessing.ch");
+			break;
+
+		case "Rechnungskopie":
+			// todo: add S/MIME Signature option
+			subject = "Rechnungskope";
+			text = "Guten Tag," + "Wie besprochen, erhalten Sie die gewünschte Rechnungskopie im Anhang."
+					+ "mit freundlichen Grüssen" + "Härterei Blessing AG";
+			headers.add("Reply-To: info@blessing.ch");
+			break;
+
+		case "Lieferscheinkopie":
+			// todo: add S/MIME Signature option
+			subject = "Lieferscheinkopie";
+			text = "Guten Tag," + "Wie besprochen, erhalten Sie die gewünschte Lieferscheinkopie im Anhang."
+					+ "mit freundlichen Grüssen" + "Härterei Blessing AG";
+			headers.add("Reply-To: info@blessing.ch");
+			break;
+
+		case "Prüfprotokollkopie":
+			// todo: add S/MIME Signature option
+			subject = "Lieferscheinkopie";
+			text = "Guten Tag," + "Wie besprochen, erhalten Sie die gewünschte Prüfprotokollkopie im Anhang."
+					+ "mit freundlichen Grüssen" + "Härterei Blessing AG";
+			headers.add("Reply-To: info@blessing.ch");
+			break;
+		case "Dokument":
+			// todo: add S/MIME Signature option
+			subject = "Lieferscheinkopie";
+			text = "Guten Tag," + "Wie besprochen, erhalten Sie das gewünschte Dokument im Anhang."
+					+ "mit freundlichen Grüssen" + "Härterei Blessing AG";
+			headers.add("Reply-To: info@blessing.ch");
+			break;
+		}
 		try {
 			Mailer.send(Credentials.username, Credentials.password, Credentials.username, emailInput.getText(), "Test",
 					"Guten Tag, " + Credentials.username + " teilt diese Bildschirmausgabe mit Ihnen", args.get("file"),
