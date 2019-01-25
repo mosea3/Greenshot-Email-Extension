@@ -1,6 +1,7 @@
 package application.view;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.mail.MessagingException;
@@ -42,9 +43,12 @@ public class ConsoleShareView implements View {
 				System.out.println("Empfänger:");
 				String reciever = scanner.nextLine();
 
+				ArrayList<String> files = new ArrayList<String>();
+				files.add(args.get("file"));
+
 				Mailer.send(Credentials.username, Credentials.password, Credentials.username, reciever, "Test",
-						"Guten Tag, " + Credentials.username + " teilt diese Bildschirmausgabe mit Ihnen",
-						args.get("file"), debug);
+						"Guten Tag, " + Credentials.username + " teilt diese Bildschirmausgabe mit Ihnen", files,
+						debug);
 
 				System.out.println("erfolgreich mit " + reciever + " geteilt.");
 			} catch (MessagingException e) {

@@ -13,6 +13,7 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 // public class Main {
+
 	Args param;
 	String parameters = System.getProperty("sun.java.command").toString()
 			.substring(getClass().getName().toString().length());
@@ -40,5 +41,9 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		System.out.println("Greenshot Java Email-Sharing Extension");
 		launch("test");
+	}
+
+	public static String getVersion() {
+		return "v0.9";
 	}
 }

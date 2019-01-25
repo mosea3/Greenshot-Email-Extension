@@ -1,6 +1,7 @@
 package application;
 
 import java.io.FileNotFoundException;
+import java.util.List;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -46,7 +47,7 @@ public class Mailer {
 	 * @throws MessagingException, FileNotFoundException
 	 */
 	public static void send(final String login, final String password, final String fromEmail, final String toEmail,
-			final String subject, final String text, final String attachment, final Boolean debug)
+			final String subject, final String text, final List attachment, final Boolean debug)
 			throws MessagingException, FileNotFoundException {
 
 		Properties props = new Properties();
@@ -69,33 +70,42 @@ public class Mailer {
 		Session session = Session.getInstance(props, auth);
 
 		Message message = new MimeMessage(session);
-		System.out.println("Email:" + fromEmail);
+		System.out.println(fromEmail);
 		InternetAddress efromEmail = new InternetAddress(fromEmail);
 
 		message.setFrom(efromEmail);
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-		message.setSubject("Bildschirmausgabe");
+		message.setSubject(subject);
 
 		BodyPart messageBodyPart = new MimeBodyPart();
 
-		messageBodyPart.setText("Guten Tag, " + fromEmail + " teilt dieses Dokument mit Ihnen.");
+		messageBodyPart.setText(text);
 
 		Multipart multipart = new MimeMultipart();
 
 		multipart.addBodyPart(messageBodyPart);
 
-		messageBodyPart = new MimeBodyPart();
-		String filename = attachment;
-		DataSource source = new FileDataSource(filename);
-		messageBodyPart.setDataHandler(new DataHandler(source));
-		messageBodyPart.setFileName(filename);
-		multipart.addBodyPart(messageBodyPart);
+		// iterate through all attachments
+		for (int i = 0; i < attachment.size(); i++) {
+			messageBodyPart = new MimeBodyPart();
+			System.out.println("add:" + attachment.get(i).toString());
+			String filename = (String) attachment.get(i);
+
+			DataSource source = new FileDataSource(filename);
+			messageBodyPart.setDataHandler(new DataHandler(source));
+			String[] tokens = filename.split(".+?/(?=[^/]+$)");
+			filename = tokens[tokens.length - 1];
+			System.out.println("send as" + "Anhang" + (i + 1) + ".jpg");
+			messageBodyPart.setFileName("Anhang" + (i + 1) + ".jpg"); // Hoomans love cardinality
+			multipart.addBodyPart(messageBodyPart);
+		}
 
 		message.setContent(multipart);
 		if (debug) {
 			System.out.println("debug: ready for sending");
 		}
 		Transport.send(message);
+		System.out.println(toEmail);
 
 		if (debug) {
 			System.out.println("debug: saving on Sent");
